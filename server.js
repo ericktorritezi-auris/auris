@@ -1,35 +1,16 @@
 const express = require("express");
 const cors = require("cors");
-const fetch = require("node-fetch");
 const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || "SUA_CHAVE_AQUI";
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// Proxy seguro para a API da Anthropic
-app.post("/api/chat", async (req, res) => {
-  try {
-    const { messages } = req.body;
-    if (!messages || !Array.isArray(messages)) {
-      return res.status(400).json({ error: "Mensagens inválidas" });
-    }
-
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01"
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1000,
-        system: `Você é o Auris, assistente terapêutico criado pelo psicanalista e hipnoterapeuta Erick Torritezi. Você integra três pilares:
+const SYSTEM_PROMPT = `Você é o Auris, assistente terapêutico criado pelo psicanalista e hipnoterapeuta Erick Torritezi. Você integra três pilares:
 
 1. ABORDAGEM ERICKSÔNICA: use linguagem hipnótica suave, metáforas poéticas e sugestões indiretas. Crie pontes naturais entre o consciente e o inconsciente.
 
@@ -57,27 +38,55 @@ FORMATO EXATO:
 
 → [opção 1]
 → [opção 2]
-→ [opção 3]`,
+→ [opção 3]`;
+
+app.post("/api/chat", async (req, res) => {
+  try {
+    if (!ANTHROPIC_API_KEY) {
+      return res.status(500).json({ error: "Chave da API não configurada" });
+    }
+
+    const { messages } = req.body;
+    if (!messages || !Array.isArray(messages)) {
+      return res.status(400).json({ error: "Mensagens inválidas" });
+    }
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01"
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: SYSTEM_PROMPT,
         messages
       })
     });
 
     const data = await response.json();
+
+    if (data.error) {
+      console.error("Erro da API Anthropic:", data.error);
+      return res.status(500).json({ error: data.error.message });
+    }
+
     const reply = (data.content || []).map(b => b.text || "").join("").trim();
-    if (!reply) throw new Error("Resposta vazia da API");
+    if (!reply) throw new Error("Resposta vazia");
 
     res.json({ reply });
   } catch (err) {
-    console.error("Erro na API:", err.message);
-    res.status(500).json({ error: "Erro ao processar resposta" });
+    console.error("Erro no servidor:", err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
-// Rota principal
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 app.listen(PORT, () => {
-  console.log(`✦ Auris rodando em http://localhost:${PORT}`);
+  console.log(`✦ Auris rodando na porta ${PORT}`);
 });
