@@ -40,16 +40,28 @@ FORMATO EXATO:
 → [opção 2]
 → [opção 3]`;
 
+// Rota de diagnóstico — confirma se o servidor e a chave estão ok
+app.get("/api/health", (req, res) => {
+  res.json({
+    status: "ok",
+    chave_configurada: !!ANTHROPIC_API_KEY,
+    chave_prefixo: ANTHROPIC_API_KEY ? ANTHROPIC_API_KEY.substring(0, 14) + "..." : "NÃO ENCONTRADA"
+  });
+});
+
 app.post("/api/chat", async (req, res) => {
   try {
     if (!ANTHROPIC_API_KEY) {
-      return res.status(500).json({ error: "Chave da API não configurada" });
+      console.error("ANTHROPIC_API_KEY não definida");
+      return res.status(500).json({ error: "Chave da API não configurada no servidor" });
     }
 
     const { messages } = req.body;
     if (!messages || !Array.isArray(messages)) {
       return res.status(400).json({ error: "Mensagens inválidas" });
     }
+
+    console.log(`Chamando API com ${messages.length} mensagens...`);
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -59,7 +71,7 @@ app.post("/api/chat", async (req, res) => {
         "anthropic-version": "2023-06-01"
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-haiku-4-5-20251001",
         max_tokens: 1000,
         system: SYSTEM_PROMPT,
         messages
@@ -67,18 +79,21 @@ app.post("/api/chat", async (req, res) => {
     });
 
     const data = await response.json();
+    console.log("Status da API:", response.status);
 
-    if (data.error) {
-      console.error("Erro da API Anthropic:", data.error);
-      return res.status(500).json({ error: data.error.message });
+    if (!response.ok) {
+      console.error("Erro da API:", JSON.stringify(data));
+      return res.status(500).json({ error: data.error?.message || "Erro na API" });
     }
 
     const reply = (data.content || []).map(b => b.text || "").join("").trim();
-    if (!reply) throw new Error("Resposta vazia");
+    if (!reply) throw new Error("Resposta vazia da API");
 
+    console.log("Resposta gerada com sucesso");
     res.json({ reply });
+
   } catch (err) {
-    console.error("Erro no servidor:", err.message);
+    console.error("Erro interno:", err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -89,4 +104,5 @@ app.get("*", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`✦ Auris rodando na porta ${PORT}`);
+  console.log(`Chave API configurada: ${!!ANTHROPIC_API_KEY}`);
 });
