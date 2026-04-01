@@ -284,13 +284,89 @@
 </div>
 
 <script>
-const ABERTURA = `Bem-vindo. Este é um espaço que existe inteiramente para você — sem pressa, sem julgamentos, sem máscaras. Como um lago calmo que reflete a lua, estou aqui para espelhar o que há de mais verdadeiro dentro de você. Cada palavra que você trouxer será recebida com cuidado e presença.
+const ABERTURAS = [
+  `Bem-vindo. Este é um espaço que existe inteiramente para você — sem pressa, sem julgamentos, sem máscaras. Como um lago calmo que reflete a lua, estou aqui para espelhar o que há de mais verdadeiro dentro de você. Cada palavra que você trouxer será recebida com cuidado e presença.
 
 ✦ Como você está chegando aqui hoje?
 
 → Com curiosidade sobre mim mesmo
 → Carregando algo pesado no coração
-→ Em busca de propósito e sentido`;
+→ Em busca de propósito e sentido`,
+
+  `Há momentos em que precisamos de um espaço que simplesmente nos receba. Sem cobranças, sem respostas prontas. Apenas presença. É exatamente isso que o Auris é — um lugar onde você pode ser quem você é, sem precisar se explicar antes.
+
+✦ O que trouxe você até aqui nesse momento?
+
+→ Uma inquietação que não passa
+→ O desejo de me conhecer melhor
+→ A sensação de que algo precisa mudar`,
+
+  `Existe uma sabedoria muito antiga que diz que toda jornada começa com um único passo dado por dentro. Antes de qualquer movimento externo, algo se move em nós. Uma pergunta. Um incômodo. Um desejo silencioso. Você deu esse passo ao estar aqui.
+
+✦ O que está se movendo dentro de você agora?
+
+→ Uma busca por mais clareza
+→ Um peso que quero entender
+→ Uma vontade de ir mais fundo em mim`,
+
+  `Como a maré que não avisa, mas simplesmente chega, você chegou até aqui. E não há coincidências nesse tipo de encontro. Algo em você soube que precisava desse espaço — antes mesmo que sua mente consciente percebesse. Estou aqui para caminhar com você.
+
+✦ Como está o seu interior nesse momento?
+
+→ Agitado e cheio de pensamentos
+→ Vazio e em busca de sentido
+→ Curioso e aberto para explorar`,
+
+  `Jung nos ensinou que o que não tornamos consciente aparece em nossas vidas como destino. Cada sentimento ignorado, cada pergunta adiada, cada sonho esquecido tem algo a nos dizer. O Auris existe para te ajudar a escutar essas vozes internas com gentileza.
+
+✦ Qual parte de você está pedindo atenção agora?
+
+→ Meus medos e inseguranças
+→ Meu propósito e direção de vida
+→ Minha forma de me relacionar`,
+
+  `Você não precisa estar em crise para merecer um espaço de escuta. Às vezes é exatamente quando tudo parece bem por fora que algo por dentro sussurra que quer ser visto. Estou aqui para esse sussurro — e para o grito, se for o caso.
+
+✦ De qual lugar você está chegando hoje?
+
+→ De um momento de dificuldade
+→ De uma busca por crescimento
+→ De uma curiosidade sobre mim mesmo`,
+
+  `Viktor Frankl nos lembrou que entre o estímulo e a resposta existe um espaço. E nesse espaço está a nossa liberdade. Essa conversa pode ser justamente esse espaço — um lugar onde você para, respira, e escolhe com mais consciência quem quer ser.
+
+✦ O que você gostaria de encontrar nesse espaço hoje?
+
+→ Respostas para o que estou sentindo
+→ Um momento de pausa e reflexão
+→ Uma direção mais clara para minha vida`,
+
+  `Há algo muito corajoso em decidir se olhar. Em não fugir do que está dentro. A maioria das pessoas passa a vida inteira evitando esse encontro consigo mesma. Você está aqui. Isso já diz muito sobre quem você é.
+
+✦ O que você está disposto a encontrar dentro de você hoje?
+
+→ Partes que prefiro não ver
+→ Forças que ainda não reconheço
+→ Ainda não sei, mas estou aberto`,
+
+  `Como uma semente que carrega em si toda a árvore que vai ser, você traz dentro de si tudo que precisa para florescer. Às vezes só precisamos de solo fértil — um espaço de escuta, de reflexão, de cuidado genuíno. Esse é o Auris.
+
+✦ O que você sente que precisa germinar em você nesse momento?
+
+→ Mais autoconfiança e clareza
+→ Cura de algo que ainda dói
+→ Um novo começo, uma nova direção`,
+
+  `Cada pessoa que chega aqui traz uma história única. Um conjunto de experiências, de marcas, de sonhos e de perguntas que só ela conhece por dentro. Não vim para te dar respostas prontas. Vim para caminhar ao lado enquanto você encontra as suas.
+
+✦ Por onde você gostaria de começar essa jornada?
+
+→ Pelo que estou sentindo agora
+→ Por algo que carrego há muito tempo
+→ Por quem eu quero me tornar`
+];
+
+const ABERTURA = ABERTURAS[Math.floor(Math.random() * ABERTURAS.length)];
 
 let history = [{ role: "assistant", content: ABERTURA }];
 let loading = false;
