@@ -115,6 +115,7 @@
     <div id="welcome-text">Um espaço criado especialmente para você. Antes de começarmos, como posso te chamar?</div>
     <label id="welcome-label" for="welcome-name">Seu nome</label>
     <input id="welcome-name" type="text" placeholder="Digite seu nome..." autocomplete="off"/>
+    <p id="welcome-alert" style="display:none;color:#c0392b;font-size:13px;text-align:center;margin-top:-8px;">Por favor, digite seu nome para continuar.</p>
     <button id="welcome-btn" onclick="startSession()">Começar minha jornada</button>
   </div>
 
@@ -403,23 +404,29 @@ inp.addEventListener("keydown", e => {
 function startSession() {
   const nameInput = document.getElementById("welcome-name");
   const name = nameInput.value.trim();
-  if (!name) { nameInput.focus(); return; }
+
+  if (!name) {
+    nameInput.style.borderColor = "#c0392b";
+    nameInput.style.background = "#fff5f5";
+    nameInput.focus();
+    const alertMsg = document.getElementById("welcome-alert");
+    if (alertMsg) alertMsg.style.display = "block";
+    setTimeout(() => {
+      nameInput.style.borderColor = "";
+      nameInput.style.background = "var(--gold-pale)";
+      if (alertMsg) alertMsg.style.display = "none";
+    }, 3000);
+    return;
+  }
+
   userName = name;
   document.getElementById("welcome-screen").style.display = "none";
   document.getElementById("btn-summary").style.display = "block";
 
   const abertura = ABERTURAS[Math.floor(Math.random() * ABERTURAS.length)];
-  const greeting = abertura.replace(
-    /^(Bem-vindo|Há momentos|Existe uma|Como a maré|O que não|Você não|Entre o|Há algo|Como uma semente|Cada pessoa)/,
-    (match) => match
-  );
-  const personalizado = userName
-    ? greeting.replace("✦", `✦`).replace(
-        /^(.+?)(
-)/s,
-        (_, first, rest) => first + ` Que bom ter você aqui, ${userName}.` + rest
-      )
-    : greeting;
+  const linhas = abertura.split("\n");
+  linhas[0] = linhas[0] + " Que bom ter você aqui, " + userName + ".";
+  const personalizado = linhas.join("\n");
 
   setTimeout(() => {
     addBotBubble(personalizado);
