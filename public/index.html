@@ -99,7 +99,7 @@
   #summary-panel.visible { display: flex; }
   #summary-title { font-size: 15px; font-weight: 600; color: var(--gold); letter-spacing: 2px; text-align: center; margin-top: 0.5rem; }
   #summary-subtitle { font-size: 12px; color: var(--gold-mid); text-align: center; }
-  #summary-text { font-size: 14px; color: var(--text-mid); line-height: 1.85; background: white; border: 0.5px solid var(--gold-border); border-radius: 16px; padding: 1.2rem 1.4rem; width: 100%; }
+  #summary-text { font-size: 14px; color: var(--text-mid); line-height: 1.85; background: white; border: 0.5px solid var(--gold-border); border-radius: 16px; padding: 1.2rem 1.4rem; width: 100%; user-select: none; -webkit-user-select: none; }
   #summary-close { width: 100%; padding: 13px; background: var(--gold); color: #FFF8E7; border: none; border-radius: 22px; font-size: 15px; font-family: inherit; cursor: pointer; font-weight: 500; margin-top: 0.5rem; }
 
   /* Help button */
@@ -150,7 +150,7 @@
         <div class="help-num">1</div>
         <div class="help-content">
           <h3>O que é o AURIS?</h3>
-          <p>O AURIS é um espaço terapêutico digital criado por <strong style="color:var(--gold)">Erick Torritezi</strong> — Psicanalista, Psicoterapeuta Integrativo e Master Hipnoterapeuta com mais de 15 anos de experiência em transformação humana. O AURIS não é um chatbot comum. É uma presença que escuta, reflete e convida você a se olhar com mais profundidade e gentileza.</p>
+          <p>O AURIS é um <strong style="color:var(--gold)">Agente Terapêutico de Inteligência Artificial Cognitiva</strong> criado por <strong style="color:var(--gold)">Erick Torritezi</strong> — Psicanalista, Psicoterapeuta Integrativo e Master Hipnoterapeuta com mais de 15 anos de experiência em transformação humana. Porém, o AURIS não é um Agente Terapêutico comum. É uma presença que escuta, reflete, aprende e convida você a se olhar com mais profundidade e gentileza.</p>
           <p style="margin-top:10px;">Cada conversa é conduzida com base em cinco grandes pilares do desenvolvimento humano, usados de forma natural e invisível:</p>
           <ul style="margin-top:8px;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:13.5px;color:var(--text-mid);line-height:1.7;">
             <li><strong style="color:var(--gold)">Hipnose Ericksoniana</strong> — linguagem suave, metáforas e imagens que tocam o coração e criam pontes entre o que sentimos e o que ainda não conseguimos nomear.</li>
@@ -210,6 +210,17 @@
         </div>
       </div>
 
+      <div class="help-step">
+        <div class="help-num">8</div>
+        <div class="help-content">
+          <h3>Privacidade e ética — nosso compromisso com você</h3>
+          <p>Cada conversa que acontece aqui é profundamente sua. Por uma escolha ética e intencional, o AURIS <strong style="color:var(--gold)">não grava, não armazena e não compartilha</strong> suas conversas em nenhum banco de dados central.</p>
+          <p style="margin-top:8px;">Acreditamos que o que você compartilha neste espaço pertence somente a você — é parte da sua história, da sua intimidade e da sua jornada interior. Nenhuma informação pessoal é coletada, monitorada ou utilizada de nenhuma forma.</p>
+          <p style="margin-top:8px;">A única forma de guardar sua sessão é através do <strong style="color:var(--gold)">resumo gerado ao final de cada conversa</strong>, que fica disponível apenas para você copiar e guardar como quiser. Essa é uma decisão consciente, baseada no respeito profundo pela vida e pela trajetória de cada pessoa que passa pelo AURIS.</p>
+          <p style="margin-top:8px;font-style:italic;color:var(--gold-mid);">Aqui, você é livre para ser quem é — sem rastros, sem julgamentos, sem arquivos.</p>
+        </div>
+      </div>
+
       <div class="help-tip">
         <strong>Dica de ouro:</strong> Trate cada sessão com o AURIS como um momento sagrado para você. Escolha um lugar tranquilo, respire fundo antes de começar e se permita ser honesto. A transformação começa quando paramos de nos esconder de nós mesmos.
       </div>
@@ -223,7 +234,10 @@
     <div id="summary-title">RESUMO DA SUA JORNADA</div>
     <div id="summary-subtitle">Gerado ao final da sessão</div>
     <div id="summary-text">Gerando resumo...</div>
-    <button id="summary-close" onclick="closeSummary()">Iniciar nova sessão</button>
+    <div style="display:flex;gap:10px;width:100%;margin-top:0.5rem;">
+      <button id="btn-copy-summary" onclick="copySummary()" style="flex:1;padding:13px;background:white;color:var(--gold);border:0.5px solid var(--gold);border-radius:22px;font-size:14px;font-family:inherit;cursor:pointer;font-weight:500;transition:all 0.15s;">Copiar resumo</button>
+      <button id="summary-close" onclick="closeSummary()" style="flex:1;padding:13px;background:var(--gold);color:#FFF8E7;border:none;border-radius:22px;font-size:14px;font-family:inherit;cursor:pointer;font-weight:500;">Nova sessão</button>
+    </div>
   </div>
 
   <!-- Header -->
@@ -255,7 +269,7 @@
     </button>
   </div>
 
-  <div id="footer">Versão: 1.3.0 | AURIS © 2026 · by <a href="https://linktr.ee/ericktorritezi" target="_blank" rel="noopener noreferrer">Erick Torritezi</a></div>
+  <div id="footer">Versão: 1.4.0 | AURIS © 2026 · by <a href="https://linktr.ee/ericktorritezi" target="_blank" rel="noopener noreferrer">Erick Torritezi</a></div>
 </div>
 
 <script>
@@ -619,6 +633,37 @@ async function requestSummary() {
   } catch(e) {
     document.getElementById("summary-text").textContent = "Não foi possível gerar o resumo agora.";
   }
+}
+
+// Copiar resumo formatado para nova sessão
+function copySummary() {
+  const rawText = document.getElementById("summary-text").textContent || "";
+  if (!rawText || rawText.includes("Gerando")) return;
+
+  const formatted = `[CONTINUAÇÃO DE SESSÃO AURIS]
+
+Olá! Estou retomando minha jornada a partir do resumo da sessão anterior. Por favor, leia com atenção e continue nossa conversa a partir deste ponto:
+
+${rawText}
+
+[Pode continuar daqui, aprofundando os temas e insights acima.]`;
+
+  navigator.clipboard.writeText(formatted).then(() => {
+    const btn = document.getElementById("btn-copy-summary");
+    const original = btn.textContent;
+    btn.textContent = "Copiado!";
+    btn.style.background = "var(--gold)";
+    btn.style.color = "#FFF8E7";
+    setTimeout(() => {
+      btn.textContent = original;
+      btn.style.background = "white";
+      btn.style.color = "var(--gold)";
+    }, 2500);
+  }).catch(() => {
+    const btn = document.getElementById("btn-copy-summary");
+    btn.textContent = "Erro ao copiar";
+    setTimeout(() => { btn.textContent = "Copiar resumo"; }, 2000);
+  });
 }
 
 // Help panel
