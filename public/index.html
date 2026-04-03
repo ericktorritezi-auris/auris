@@ -105,16 +105,17 @@
   #welcome-bottom { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 
   /* Layout de duas colunas: gênero + faixa etária */
-  #gender-age-row { display: flex; gap: 10px; width: 100%; max-width: 300px; }
-  .sel-col { display: flex; flex-direction: column; gap: 5px; flex: 1; }
-  .sel-col-label { font-size: 11px; color: var(--gold); font-weight: 500; text-align: center; }
+  #gender-age-row { display: flex; gap: 0; width: 100%; max-width: 300px; background: white; border: 0.5px solid var(--gold-border); border-radius: 16px; overflow: hidden; }
+  .sel-col { display: flex; flex-direction: column; gap: 5px; flex: 1; padding: 10px 8px; }
+  .sel-col:first-child { border-right: 1px solid var(--gold-border); }
+  .sel-col-label { font-size: 11px; color: var(--gold); font-weight: 600; text-align: center; letter-spacing: 0.5px; text-transform: uppercase; padding-bottom: 5px; border-bottom: 0.5px solid var(--gold-border); margin-bottom: 2px; }
   .sel-col-options { display: flex; flex-direction: column; gap: 5px; }
   .sel-btn {
     width: 100%;
-    padding: 8px 5px;
-    background: white;
+    padding: 7px 4px;
+    background: transparent;
     border: 0.5px solid var(--gold-border);
-    border-radius: 18px;
+    border-radius: 14px;
     font-size: 12px;
     font-family: inherit;
     color: var(--text-mid);
@@ -130,9 +131,11 @@
     font-weight: 500;
   }
   .sel-btn.selected { box-shadow: 0 0 0 2px var(--gold-light); }
-  .sel-alert { display:none; color:#c0392b; font-size:11px; text-align:center; margin-top:-2px; }
+  .sel-alert { display:none; color:#c0392b; font-size:11px; text-align:center; margin-top:2px; }
   #gender-alert { display:none; color:#c0392b; font-size:11px; text-align:center; }
   #age-alert { display:none; color:#c0392b; font-size:11px; text-align:center; }
+  #gender-age-alerts { display:flex; gap:0; width:100%; max-width:300px; }
+  #gender-age-alerts > p { flex:1; }
 
   /* Summary panel */
   #summary-panel { position: absolute; inset: 0; background: var(--app-bg); display: none; flex-direction: column; align-items: center; padding: 2rem 1.5rem; z-index: 10; gap: 14px; overflow-y: auto; }
@@ -192,7 +195,6 @@
             <button class="sel-btn" onclick="selectGender(this, 'nao-binario')">Não-binário</button>
             <button class="sel-btn" onclick="selectGender(this, 'prefiro-nao-informar')">Prefiro não informar</button>
           </div>
-          <p id="gender-alert" class="sel-alert">Selecione seu gênero.</p>
         </div>
         <!-- Faixa etária -->
         <div class="sel-col">
@@ -203,8 +205,11 @@
             <button class="sel-btn" onclick="selectAge(this, '40-60')">40 a 60 anos</button>
             <button class="sel-btn" onclick="selectAge(this, 'acima-60')">Acima de 60</button>
           </div>
-          <p id="age-alert" class="sel-alert">Selecione sua faixa etária.</p>
         </div>
+      </div>
+      <div id="gender-age-alerts">
+        <p id="gender-alert" class="sel-alert">Selecione seu gênero.</p>
+        <p id="age-alert" class="sel-alert">Selecione sua faixa etária.</p>
       </div>
 
       <button id="welcome-btn" onclick="startSession()">Começar minha jornada</button>
@@ -351,7 +356,7 @@
     </button>
   </div>
 
-  <div id="footer">Versão: 1.6.0 | AURIS © 2026 · by <a href="https://linktr.ee/ericktorritezi" target="_blank" rel="noopener noreferrer">Erick Torritezi</a></div>
+  <div id="footer">Versão: 1.6.1 | AURIS © 2026 · by <a href="https://linktr.ee/ericktorritezi" target="_blank" rel="noopener noreferrer">Erick Torritezi</a></div>
 </div>
 
 <script>
