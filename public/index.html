@@ -104,31 +104,35 @@
   #welcome-btn:active { background: #6A4808; }
   #welcome-bottom { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 
-  /* Seleção de gênero */
-  #gender-label { font-size: 12px; color: var(--gold); font-weight: 500; text-align: center; margin-bottom: -4px; }
-  #gender-options { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; width: 100%; max-width: 300px; }
-  .gender-btn {
-    flex: 1 1 calc(50% - 4px);
-    min-width: 110px;
-    padding: 9px 6px;
+  /* Layout de duas colunas: gênero + faixa etária */
+  #gender-age-row { display: flex; gap: 10px; width: 100%; max-width: 300px; }
+  .sel-col { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+  .sel-col-label { font-size: 11px; color: var(--gold); font-weight: 500; text-align: center; }
+  .sel-col-options { display: flex; flex-direction: column; gap: 5px; }
+  .sel-btn {
+    width: 100%;
+    padding: 8px 5px;
     background: white;
     border: 0.5px solid var(--gold-border);
-    border-radius: 22px;
-    font-size: 12.5px;
+    border-radius: 18px;
+    font-size: 12px;
     font-family: inherit;
     color: var(--text-mid);
     cursor: pointer;
     transition: all 0.15s;
     text-align: center;
+    line-height: 1.3;
   }
-  .gender-btn:active, .gender-btn.selected {
+  .sel-btn:active, .sel-btn.selected {
     background: var(--gold);
     border-color: var(--gold);
     color: #FFF8E7;
     font-weight: 500;
   }
-  .gender-btn.selected { box-shadow: 0 0 0 2px var(--gold-light); }
-  #gender-alert { display:none; color:#c0392b; font-size:12px; text-align:center; margin-top:-4px; }
+  .sel-btn.selected { box-shadow: 0 0 0 2px var(--gold-light); }
+  .sel-alert { display:none; color:#c0392b; font-size:11px; text-align:center; margin-top:-2px; }
+  #gender-alert { display:none; color:#c0392b; font-size:11px; text-align:center; }
+  #age-alert { display:none; color:#c0392b; font-size:11px; text-align:center; }
 
   /* Summary panel */
   #summary-panel { position: absolute; inset: 0; background: var(--app-bg); display: none; flex-direction: column; align-items: center; padding: 2rem 1.5rem; z-index: 10; gap: 14px; overflow-y: auto; }
@@ -178,14 +182,30 @@
       <input id="welcome-name" type="text" placeholder="Digite seu nome..." autocomplete="off"/>
       <p id="welcome-alert" style="display:none;color:#c0392b;font-size:12px;text-align:center;margin-top:-6px;">Por favor, digite seu nome para continuar.</p>
 
-      <label id="gender-label">Seu gênero</label>
-      <div id="gender-options">
-        <button class="gender-btn" onclick="selectGender(this, 'masculino')">Masculino</button>
-        <button class="gender-btn" onclick="selectGender(this, 'feminino')">Feminino</button>
-        <button class="gender-btn" onclick="selectGender(this, 'nao-binario')">Não-binário</button>
-        <button class="gender-btn" onclick="selectGender(this, 'prefiro-nao-informar')">Prefiro não informar</button>
+      <div id="gender-age-row">
+        <!-- Gênero -->
+        <div class="sel-col">
+          <span class="sel-col-label">Gênero</span>
+          <div class="sel-col-options">
+            <button class="sel-btn" onclick="selectGender(this, 'masculino')">Masculino</button>
+            <button class="sel-btn" onclick="selectGender(this, 'feminino')">Feminino</button>
+            <button class="sel-btn" onclick="selectGender(this, 'nao-binario')">Não-binário</button>
+            <button class="sel-btn" onclick="selectGender(this, 'prefiro-nao-informar')">Prefiro não informar</button>
+          </div>
+          <p id="gender-alert" class="sel-alert">Selecione seu gênero.</p>
+        </div>
+        <!-- Faixa etária -->
+        <div class="sel-col">
+          <span class="sel-col-label">Faixa etária</span>
+          <div class="sel-col-options">
+            <button class="sel-btn" onclick="selectAge(this, '0-20')">0 a 20 anos</button>
+            <button class="sel-btn" onclick="selectAge(this, '20-40')">20 a 40 anos</button>
+            <button class="sel-btn" onclick="selectAge(this, '40-60')">40 a 60 anos</button>
+            <button class="sel-btn" onclick="selectAge(this, 'acima-60')">Acima de 60</button>
+          </div>
+          <p id="age-alert" class="sel-alert">Selecione sua faixa etária.</p>
+        </div>
       </div>
-      <p id="gender-alert">Por favor, selecione seu gênero para continuar.</p>
 
       <button id="welcome-btn" onclick="startSession()">Começar minha jornada</button>
     </div>
@@ -235,8 +255,8 @@
       <div class="help-step">
         <div class="help-num">2</div>
         <div class="help-content">
-          <h3>Informe seu nome e gênero para começar</h3>
-          <p>Ao abrir o AURIS, você verá a tela de boas-vindas com dois campos obrigatórios: seu <strong>nome</strong> e seu <strong>gênero</strong> (Masculino, Feminino, Não-binário ou Prefiro não informar). Esses dados permitem que o AURIS se comunique com você de forma personalizada e respeitosa, usando sempre os pronomes e tratamentos adequados. Após preencher os dois campos, clique em <em>Começar minha jornada</em> — cada sessão começa com uma abertura diferente, criada especialmente para te acolher naquele momento.</p>
+          <h3>Informe seu nome, gênero e faixa etária para começar</h3>
+          <p>Ao abrir o AURIS, você verá a tela de boas-vindas com três campos obrigatórios: seu <strong>nome</strong>, seu <strong>gênero</strong> (Masculino, Feminino, Não-binário ou Prefiro não informar) e sua <strong>faixa etária</strong> (0 a 20, 20 a 40, 40 a 60 ou Acima de 60 anos). Os três campos precisam ser preenchidos para iniciar — alertas individuais aparecem se algum campo estiver vazio. Essas informações permitem que o AURIS personalize toda a linguagem, os exemplos e a profundidade terapêutica para o seu momento de vida.</p>
         </div>
       </div>
 
@@ -331,7 +351,7 @@
     </button>
   </div>
 
-  <div id="footer">Versão: 1.5.2 | AURIS © 2026 · by <a href="https://linktr.ee/ericktorritezi" target="_blank" rel="noopener noreferrer">Erick Torritezi</a></div>
+  <div id="footer">Versão: 1.6.0 | AURIS © 2026 · by <a href="https://linktr.ee/ericktorritezi" target="_blank" rel="noopener noreferrer">Erick Torritezi</a></div>
 </div>
 
 <script>
@@ -419,15 +439,23 @@ const ABERTURAS = [
 
 let userName = "";
 let userGender = "";
+let userAge = "";
 let history = [];
 let loading = false;
 let allOptRows = [];
 
 function selectGender(btn, gender) {
-  document.querySelectorAll(".gender-btn").forEach(b => b.classList.remove("selected"));
+  btn.closest(".sel-col-options").querySelectorAll(".sel-btn").forEach(b => b.classList.remove("selected"));
   btn.classList.add("selected");
   userGender = gender;
   document.getElementById("gender-alert").style.display = "none";
+}
+
+function selectAge(btn, age) {
+  btn.closest(".sel-col-options").querySelectorAll(".sel-btn").forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
+  userAge = age;
+  document.getElementById("age-alert").style.display = "none";
 }
 
 const msgs = document.getElementById("messages");
@@ -506,6 +534,13 @@ function addBotBubble(text) {
   }
 
   const btm = document.getElementById("bottom");
+  if (opts.length) {
+    const hint = document.createElement("div");
+    hint.style.cssText = "font-size:12px;color:var(--text-muted);text-align:center;padding:2px 4px;font-style:italic;";
+    hint.textContent = "Escolha uma opção ou escreva livremente abaixo ↓";
+    wrap.appendChild(hint);
+  }
+
   msgs.insertBefore(wrap, btm);
   scrollDown();
 }
@@ -665,12 +700,14 @@ function startSession() {
   if (!userGender) {
     const gAlert = document.getElementById("gender-alert");
     if (gAlert) gAlert.style.display = "block";
-    document.getElementById("gender-options").style.outline = "1px solid #c0392b";
-    document.getElementById("gender-options").style.borderRadius = "12px";
-    setTimeout(() => {
-      if (gAlert) gAlert.style.display = "none";
-      document.getElementById("gender-options").style.outline = "";
-    }, 3000);
+    setTimeout(() => { if (gAlert) gAlert.style.display = "none"; }, 3000);
+    valid = false;
+  }
+
+  if (!userAge) {
+    const aAlert = document.getElementById("age-alert");
+    if (aAlert) aAlert.style.display = "block";
+    setTimeout(() => { if (aAlert) aAlert.style.display = "none"; }, 3000);
     valid = false;
   }
 
@@ -686,14 +723,22 @@ function startSession() {
     "nao-binario": "não-binário",
     "prefiro-nao-informar": "prefere não informar o gênero"
   };
+  const ageMap = {
+    "0-20": "entre 0 e 20 anos",
+    "20-40": "entre 20 e 40 anos",
+    "40-60": "entre 40 e 60 anos",
+    "acima-60": "acima de 60 anos"
+  };
+
   const genderLabel = genderMap[userGender] || "";
+  const ageLabel = ageMap[userAge] || "";
 
   const abertura = ABERTURAS[Math.floor(Math.random() * ABERTURAS.length)];
   const linhas = abertura.split("\n");
   linhas[0] = linhas[0] + " Que bom ter você aqui, " + userName + ".";
   const personalizado = linhas.join("\n");
 
-  const genderContext = `[Contexto interno: o nome da pessoa é ${userName} e o gênero é ${genderLabel}. Use sempre os pronomes e tratamentos corretos ao longo de toda a conversa. Isso é apenas um dado de contexto — nunca mencione ou repita essa informação para a pessoa.]`;
+  const genderContext = `[Contexto interno — não mencionar ao usuário: Nome: ${userName}. Gênero: ${genderLabel}. Faixa etária: ${ageLabel}. Use sempre os pronomes e tratamentos adequados ao gênero. Adapte toda a linguagem, exemplos, metáforas e profundidade terapêutica à faixa etária informada. Para 0-20 anos: linguagem leve, exemplos jovens, foco em identidade e descoberta. Para 20-40 anos: linguagem direta, foco em propósito, relacionamentos e carreira. Para 40-60 anos: linguagem madura, foco em revisão de vida, legado e transições. Para acima de 60 anos: linguagem acolhedora e respeitosa, foco em sabedoria, sentido e aceitação.]`;
 
   setTimeout(() => {
     addBotBubble(personalizado);
@@ -805,7 +850,8 @@ function closeSummary() {
   document.getElementById("welcome-name").value = "";
   document.getElementById("welcome-name").focus();
   userGender = "";
-  document.querySelectorAll(".gender-btn").forEach(b => b.classList.remove("selected"));
+  userAge = "";
+  document.querySelectorAll(".sel-btn").forEach(b => b.classList.remove("selected"));
   clearSession();
 }
 </script>
