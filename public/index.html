@@ -37,6 +37,13 @@
   #header-sub { font-size: 11px; color: #F0C96A; margin-top: 2px; }
   #header-right { display: flex; align-items: center; gap: 8px; }
   #btn-summary { background: rgba(255,255,255,0.15); border: 0.5px solid rgba(255,255,255,0.3); color: #FFF8E7; font-size: 11px; font-family: inherit; cursor: pointer; padding: 5px 10px; border-radius: 12px; display: none; }
+  #btn-help-chat { background: rgba(255,255,255,0.15); border: 0.5px solid rgba(255,255,255,0.3); color: #FFF8E7; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.15s; position: relative; }
+  #btn-help-chat:hover { background: rgba(255,255,255,0.3); }
+  #btn-help-chat:active { transform: scale(0.93); }
+  #btn-help-chat svg { width: 15px; height: 15px; }
+  /* Tooltip desktop */
+  #btn-help-chat::after { content: attr(data-tooltip); position: absolute; bottom: -32px; right: 0; background: rgba(44,44,42,0.92); color: #FFF8E7; font-size: 11px; font-family: inherit; white-space: nowrap; padding: 5px 10px; border-radius: 8px; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 100; }
+  #btn-help-chat:hover::after { opacity: 1; }
   #status { display: flex; align-items: center; gap: 5px; }
   #status-dot { width: 7px; height: 7px; border-radius: 50%; background: #7FE0A0; }
   #status-txt { font-size: 11px; color: #F0C96A; }
@@ -299,6 +306,11 @@
     </div>
     <div id="header-right">
       <button id="btn-summary" onclick="requestSummary()">Ver resumo</button>
+      <button id="btn-help-chat" onclick="openHelpFromChat()" data-tooltip="Como aproveitar o melhor do AURIS?" title="Como aproveitar o melhor do AURIS?" aria-label="Como aproveitar o melhor do AURIS?">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#FFF8E7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 18h6M10 22h4M12 2a7 7 0 0 1 7 7c0 2.5-1.3 4.7-3.3 6L15 17H9l-.7-2C6.3 13.7 5 11.5 5 9a7 7 0 0 1 7-7z"/>
+        </svg>
+      </button>
       <div id="status">
         <div id="status-dot"></div>
         <span id="status-txt">online</span>
@@ -319,7 +331,7 @@
     </button>
   </div>
 
-  <div id="footer">Versão: 1.5.1 | AURIS © 2026 · by <a href="https://linktr.ee/ericktorritezi" target="_blank" rel="noopener noreferrer">Erick Torritezi</a></div>
+  <div id="footer">Versão: 1.5.2 | AURIS © 2026 · by <a href="https://linktr.ee/ericktorritezi" target="_blank" rel="noopener noreferrer">Erick Torritezi</a></div>
 </div>
 
 <script>
@@ -754,11 +766,28 @@ ${rawText}
 }
 
 // Help panel
+let helpOpenedFromChat = false;
+
 function openHelp() {
+  helpOpenedFromChat = false;
   document.getElementById("help-panel").classList.add("visible");
 }
+
+function openHelpFromChat() {
+  helpOpenedFromChat = true;
+  document.getElementById("help-panel").classList.add("visible");
+}
+
 function closeHelp() {
   document.getElementById("help-panel").classList.remove("visible");
+  if (helpOpenedFromChat) {
+    helpOpenedFromChat = false;
+    // Scroll de volta ao fim da conversa
+    setTimeout(() => {
+      const b = document.getElementById("bottom");
+      if (b) b.scrollIntoView({ behavior: "smooth" });
+    }, 150);
+  }
 }
 
 function closeSummary() {
