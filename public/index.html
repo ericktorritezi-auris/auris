@@ -94,6 +94,32 @@
   #welcome-btn { width: 100%; max-width: 300px; padding: 14px; background: var(--gold); color: #FFF8E7; border: none; border-radius: 22px; font-size: 15px; font-family: inherit; cursor: pointer; font-weight: 500; letter-spacing: 1px; transition: background 0.2s; }
   #welcome-btn:active { background: #6A4808; }
 
+  /* Seleção de gênero */
+  #gender-label { font-size: 13px; color: var(--gold); font-weight: 500; text-align: center; }
+  #gender-options { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; width: 100%; max-width: 300px; }
+  .gender-btn {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 120px;
+    padding: 10px 8px;
+    background: white;
+    border: 0.5px solid var(--gold-border);
+    border-radius: 22px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--text-mid);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .gender-btn:active, .gender-btn.selected {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #FFF8E7;
+    font-weight: 500;
+  }
+  .gender-btn.selected { box-shadow: 0 0 0 2px var(--gold-light); }
+  #gender-alert { display:none; color:#c0392b; font-size:13px; text-align:center; margin-top:-4px; }
+
   /* Summary panel */
   #summary-panel { position: absolute; inset: 0; background: var(--app-bg); display: none; flex-direction: column; align-items: center; padding: 2rem 1.5rem; z-index: 10; gap: 14px; overflow-y: auto; }
   #summary-panel.visible { display: flex; }
@@ -134,6 +160,16 @@
     <label id="welcome-label" for="welcome-name">Seu nome</label>
     <input id="welcome-name" type="text" placeholder="Digite seu nome..." autocomplete="off"/>
     <p id="welcome-alert" style="display:none;color:#c0392b;font-size:13px;text-align:center;margin-top:-8px;">Por favor, digite seu nome para continuar.</p>
+
+    <label id="gender-label">Seu gênero</label>
+    <div id="gender-options">
+      <button class="gender-btn" onclick="selectGender(this, 'masculino')">Masculino</button>
+      <button class="gender-btn" onclick="selectGender(this, 'feminino')">Feminino</button>
+      <button class="gender-btn" onclick="selectGender(this, 'nao-binario')">Não-binário</button>
+      <button class="gender-btn" onclick="selectGender(this, 'prefiro-nao-informar')">Prefiro não informar</button>
+    </div>
+    <p id="gender-alert">Por favor, selecione seu gênero para continuar.</p>
+
     <button id="welcome-btn" onclick="startSession()">Começar minha jornada</button>
     <button id="btn-help" onclick="openHelp()">Como aproveitar o melhor do AURIS?</button>
   </div>
@@ -269,7 +305,7 @@
     </button>
   </div>
 
-  <div id="footer">Versão: 1.4.0 | AURIS © 2026 · by <a href="https://linktr.ee/ericktorritezi" target="_blank" rel="noopener noreferrer">Erick Torritezi</a></div>
+  <div id="footer">Versão: 1.5.0 | AURIS © 2026 · by <a href="https://linktr.ee/ericktorritezi" target="_blank" rel="noopener noreferrer">Erick Torritezi</a></div>
 </div>
 
 <script>
@@ -356,9 +392,17 @@ const ABERTURAS = [
 ];
 
 let userName = "";
+let userGender = "";
 let history = [];
 let loading = false;
 let allOptRows = [];
+
+function selectGender(btn, gender) {
+  document.querySelectorAll(".gender-btn").forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
+  userGender = gender;
+  document.getElementById("gender-alert").style.display = "none";
+}
 
 const msgs = document.getElementById("messages");
 const inp = document.getElementById("inp");
@@ -576,6 +620,7 @@ function restoreSession() {
 function startSession() {
   const nameInput = document.getElementById("welcome-name");
   const name = nameInput.value.trim();
+  let valid = true;
 
   if (!name) {
     nameInput.style.borderColor = "#c0392b";
@@ -588,22 +633,50 @@ function startSession() {
       nameInput.style.background = "var(--gold-pale)";
       if (alertMsg) alertMsg.style.display = "none";
     }, 3000);
-    return;
+    valid = false;
   }
+
+  if (!userGender) {
+    const gAlert = document.getElementById("gender-alert");
+    if (gAlert) gAlert.style.display = "block";
+    document.getElementById("gender-options").style.outline = "1px solid #c0392b";
+    document.getElementById("gender-options").style.borderRadius = "12px";
+    setTimeout(() => {
+      if (gAlert) gAlert.style.display = "none";
+      document.getElementById("gender-options").style.outline = "";
+    }, 3000);
+    valid = false;
+  }
+
+  if (!valid) return;
 
   userName = name;
   document.getElementById("welcome-screen").style.display = "none";
   document.getElementById("btn-summary").style.display = "block";
+
+  const genderMap = {
+    "masculino": "masculino",
+    "feminino": "feminino",
+    "nao-binario": "não-binário",
+    "prefiro-nao-informar": "prefere não informar o gênero"
+  };
+  const genderLabel = genderMap[userGender] || "";
 
   const abertura = ABERTURAS[Math.floor(Math.random() * ABERTURAS.length)];
   const linhas = abertura.split("\n");
   linhas[0] = linhas[0] + " Que bom ter você aqui, " + userName + ".";
   const personalizado = linhas.join("\n");
 
+  const genderContext = `[Contexto interno: o nome da pessoa é ${userName} e o gênero é ${genderLabel}. Use sempre os pronomes e tratamentos corretos ao longo de toda a conversa. Isso é apenas um dado de contexto — nunca mencione ou repita essa informação para a pessoa.]`;
+
   setTimeout(() => {
     addBotBubble(personalizado);
-    history = [{ role: "assistant", content: personalizado }];
-  }, 300);
+    history = [
+      { role: "user", content: genderContext },
+      { role: "assistant", content: personalizado }
+    ];
+    saveSession();
+  }, 400);
 }
 
 document.getElementById("welcome-name").addEventListener("keydown", e => {
@@ -688,6 +761,8 @@ function closeSummary() {
   document.getElementById("welcome-screen").style.display = "flex";
   document.getElementById("welcome-name").value = "";
   document.getElementById("welcome-name").focus();
+  userGender = "";
+  document.querySelectorAll(".gender-btn").forEach(b => b.classList.remove("selected"));
   clearSession();
 }
 </script>
