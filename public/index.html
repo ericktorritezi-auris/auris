@@ -145,6 +145,22 @@
   #summary-text { font-size: 14px; color: var(--text-mid); line-height: 1.85; background: white; border: 0.5px solid var(--gold-border); border-radius: 16px; padding: 1.2rem 1.4rem; width: 100%; user-select: none; -webkit-user-select: none; }
   #summary-close { width: 100%; padding: 13px; background: var(--gold); color: #FFF8E7; border: none; border-radius: 22px; font-size: 15px; font-family: inherit; cursor: pointer; font-weight: 500; margin-top: 0.5rem; }
 
+  /* NPS Modal */
+  #nps-overlay { display:none; position:absolute; inset:0; background:rgba(44,44,42,0.55); z-index:30; align-items:center; justify-content:center; }
+  #nps-overlay.visible { display:flex; }
+  #nps-card { background:var(--app-bg); border-radius:20px; padding:1.5rem 1.2rem; width:88%; max-width:340px; display:flex; flex-direction:column; align-items:center; gap:14px; box-shadow:0 4px 32px rgba(0,0,0,0.15); }
+  #nps-logo { width:44px; height:44px; }
+  #nps-logo img { width:100%; height:100%; object-fit:contain; }
+  #nps-title { font-size:15px; font-weight:600; color:var(--gold); text-align:center; }
+  #nps-question { font-size:13.5px; color:var(--text-mid); text-align:center; line-height:1.65; }
+  #nps-scale { display:flex; gap:5px; justify-content:center; flex-wrap:nowrap; width:100%; }
+  .nps-num { width:28px; height:28px; border-radius:8px; border:0.5px solid var(--gold-border); background:white; font-size:12px; font-weight:500; color:var(--text-mid); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; flex-shrink:0; }
+  .nps-num:hover, .nps-num.selected { background:var(--gold); border-color:var(--gold); color:#FFF8E7; }
+  #nps-labels { display:flex; justify-content:space-between; width:100%; font-size:10px; color:var(--text-muted); }
+  #nps-submit { width:100%; padding:11px; background:var(--gold); color:#FFF8E7; border:none; border-radius:20px; font-size:14px; font-family:inherit; cursor:pointer; font-weight:500; opacity:0.4; transition:opacity 0.2s; }
+  #nps-submit.active { opacity:1; }
+  #nps-skip { background:none; border:none; color:var(--text-muted); font-size:12px; font-family:inherit; cursor:pointer; text-decoration:underline; }
+
   /* Help button */
   #btn-help { background: none; border: none; color: var(--gold-mid); font-size: 13px; font-family: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; padding: 0; }
   #btn-help:hover { color: var(--gold); }
@@ -308,6 +324,16 @@
       <div class="help-step">
         <div class="help-num">8</div>
         <div class="help-content">
+          <h3>Avalie sua experiência — NPS</h3>
+          <p>Durante a sessão, após a sexta troca de mensagens, o AURIS vai te convidar a avaliar sua experiência com uma nota de 0 a 10. Essa avaliação é chamada de NPS — Net Promoter Score — e ajuda a melhorar o AURIS continuamente.</p>
+          <p style="margin-top:8px;">Se você ainda não avaliou durante a sessão, a pergunta aparecerá ao clicar em <em>Nova sessão</em> no painel de resumo. A avaliação é feita apenas uma vez por sessão — se você já respondeu, não será solicitado novamente.</p>
+          <p style="margin-top:8px;font-style:italic;color:var(--gold-mid);">Sua opinião é um presente para nós. Cada nota ajuda o AURIS a se tornar cada vez mais humano e transformador.</p>
+        </div>
+      </div>
+
+      <div class="help-step">
+        <div class="help-num">9</div>
+        <div class="help-content">
           <h3>Privacidade e ética — nosso compromisso com você</h3>
           <p>Cada conversa que acontece aqui é profundamente sua. Por uma escolha ética e intencional, o AURIS <strong style="color:var(--gold)">não grava, não armazena e não compartilha</strong> suas conversas em nenhum banco de dados central.</p>
           <p style="margin-top:8px;">A única forma de guardar sua sessão é através do resumo gerado ao final de cada conversa, disponível apenas para você. Essa é uma decisão consciente, baseada no respeito profundo pela vida e pela trajetória de cada pessoa que passa pelo AURIS.</p>
@@ -319,6 +345,31 @@
         <strong>Dica de ouro:</strong> Trate cada sessão com o AURIS como um momento sagrado para você. Escolha um lugar tranquilo, respire fundo antes de começar e se permita ser honesto. A transformação começa quando paramos de nos esconder de nós mesmos.
       </div>
 
+    </div>
+  </div>
+
+  <!-- NPS Overlay -->
+  <div id="nps-overlay">
+    <div id="nps-card">
+      <div id="nps-logo"><img src="" alt="AURIS" id="nps-logo-img"/></div>
+      <div id="nps-title">Sua opinião importa muito!</div>
+      <div id="nps-question">Você está gostando do AURIS?<br/>De 0 a 10, o quanto você indicaria<br/>o AURIS para alguém?</div>
+      <div id="nps-scale">
+        <div class="nps-num" onclick="selectNPS(this,0)">0</div>
+        <div class="nps-num" onclick="selectNPS(this,1)">1</div>
+        <div class="nps-num" onclick="selectNPS(this,2)">2</div>
+        <div class="nps-num" onclick="selectNPS(this,3)">3</div>
+        <div class="nps-num" onclick="selectNPS(this,4)">4</div>
+        <div class="nps-num" onclick="selectNPS(this,5)">5</div>
+        <div class="nps-num" onclick="selectNPS(this,6)">6</div>
+        <div class="nps-num" onclick="selectNPS(this,7)">7</div>
+        <div class="nps-num" onclick="selectNPS(this,8)">8</div>
+        <div class="nps-num" onclick="selectNPS(this,9)">9</div>
+        <div class="nps-num" onclick="selectNPS(this,10)">10</div>
+      </div>
+      <div id="nps-labels"><span>Não indicaria</span><span>Indicaria muito!</span></div>
+      <button id="nps-submit" disabled onclick="submitNPS()">Enviar avaliação</button>
+      <button id="nps-skip" onclick="skipNPS()">Agora não</button>
     </div>
   </div>
 
@@ -356,7 +407,7 @@
     </button>
   </div>
 
-  <div id="footer">Versão: 1.6.1 | AURIS © 2026 · by <a href="https://linktr.ee/ericktorritezi" target="_blank" rel="noopener noreferrer">Erick Torritezi</a></div>
+  <div id="footer">Versão: 1.7.0 | AURIS © 2026 · by <a href="https://linktr.ee/ericktorritezi" target="_blank" rel="noopener noreferrer">Erick Torritezi</a></div>
 </div>
 
 <script>
@@ -448,6 +499,10 @@ let userAge = "";
 let history = [];
 let loading = false;
 let allOptRows = [];
+let interactionCount = 0;
+let npsAnswered = false;
+let npsSelectedScore = null;
+let npsCallback = null;
 
 function selectGender(btn, gender) {
   btn.closest(".sel-col-options").querySelectorAll(".sel-btn").forEach(b => b.classList.remove("selected"));
@@ -590,6 +645,10 @@ async function callAPI(userText) {
     saveSession();
     hideTyping();
     addBotBubble(data.reply);
+    interactionCount++;
+    if (interactionCount === 6 && !npsAnswered) {
+      setTimeout(() => showNPS(null), 800);
+    }
   } catch(e) {
     hideTyping();
     const fallback = `Algo interrompeu nosso encontro por um instante. Como a maré que sempre retorna, estou aqui de novo.\n\n✦ Como você gostaria de continuar?\n\n→ Retomar de onde paramos\n→ Começar um novo tema\n→ Escrever livremente`;
@@ -752,6 +811,9 @@ function startSession() {
       { role: "assistant", content: personalizado }
     ];
     saveSession();
+    // Injetar logo no NPS overlay
+    const logoSrc = document.querySelector(".bot-name img");
+    if (logoSrc) document.getElementById("nps-logo-img").src = logoSrc.src;
   }, 400);
 }
 
@@ -815,6 +877,45 @@ ${rawText}
   });
 }
 
+// NPS
+function showNPS(callback) {
+  npsCallback = callback;
+  npsSelectedScore = null;
+  document.querySelectorAll(".nps-num").forEach(n => n.classList.remove("selected"));
+  const btn = document.getElementById("nps-submit");
+  btn.disabled = true;
+  btn.classList.remove("active");
+  document.getElementById("nps-overlay").classList.add("visible");
+}
+
+function selectNPS(el, score) {
+  document.querySelectorAll(".nps-num").forEach(n => n.classList.remove("selected"));
+  el.classList.add("selected");
+  npsSelectedScore = score;
+  const btn = document.getElementById("nps-submit");
+  btn.disabled = false;
+  btn.classList.add("active");
+}
+
+async function submitNPS() {
+  if (npsSelectedScore === null) return;
+  npsAnswered = true;
+  document.getElementById("nps-overlay").classList.remove("visible");
+  try {
+    await fetch("/api/nps", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ score: npsSelectedScore })
+    });
+  } catch(e) {}
+  if (typeof npsCallback === "function") { npsCallback(); npsCallback = null; }
+}
+
+function skipNPS() {
+  document.getElementById("nps-overlay").classList.remove("visible");
+  if (typeof npsCallback === "function") { npsCallback(); npsCallback = null; }
+}
+
 // Help panel
 let helpOpenedFromChat = false;
 
@@ -840,11 +941,13 @@ function closeHelp() {
   }
 }
 
-function closeSummary() {
+function doResetSession() {
   document.getElementById("summary-panel").classList.remove("visible");
   history = [];
   allOptRows = [];
   loading = false;
+  interactionCount = 0;
+  npsAnswered = false;
   msgs.innerHTML = '<div id="bottom"></div>';
   userName = "";
   document.getElementById("btn-summary").style.display = "none";
@@ -858,6 +961,14 @@ function closeSummary() {
   userAge = "";
   document.querySelectorAll(".sel-btn").forEach(b => b.classList.remove("selected"));
   clearSession();
+}
+
+function closeSummary() {
+  if (!npsAnswered) {
+    showNPS(() => doResetSession());
+  } else {
+    doResetSession();
+  }
 }
 </script>
 </body>
