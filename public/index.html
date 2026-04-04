@@ -680,7 +680,21 @@ function chooseOpt(opt, row) {
 
 function send() {
   const v = inp.value.trim();
-  if (!v || loading) return;
+  if (loading) return;
+  if (!v) {
+    const emptyMsg = document.getElementById("empty-msg");
+    const inpEl = document.getElementById("inp");
+    inpEl.classList.add("empty-alert");
+    emptyMsg.style.display = "block";
+    inpEl.focus();
+    setTimeout(() => {
+      inpEl.classList.remove("empty-alert");
+      emptyMsg.style.display = "none";
+    }, 3500);
+    return;
+  }
+  document.getElementById("empty-msg").style.display = "none";
+  document.getElementById("inp").classList.remove("empty-alert");
   inp.value = "";
   inp.style.height = "auto";
   addUserBubble(v);
