@@ -122,7 +122,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.get("/api/health", (req, res) => {
   const s = calcNPSStats();
   res.json({
-    status: "ok", versao: "1.9.0",
+    status: "ok", versao: "1.9.1",
     chave_configurada: !!ANTHROPIC_API_KEY,
     data_dir: DATA_DIR,
     log_existe: fs.existsSync(NPS_LOG),
@@ -385,7 +385,7 @@ app.post("/api/summary", async (req, res) => {
 app.get("*", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 
 app.listen(PORT, () => {
-  console.log(`✦ AURIS v1.9.0 rodando na porta ${PORT}`);
+  console.log(`✦ AURIS v1.9.1 rodando na porta ${PORT}`);
   console.log(`Data dir: ${DATA_DIR}`);
   console.log(`Log NPS: ${NPS_LOG}`);
   try {
