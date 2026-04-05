@@ -388,11 +388,23 @@ app.listen(PORT, () => {
   console.log(`✦ AURIS v1.9.1 rodando na porta ${PORT}`);
   console.log(`Data dir: ${DATA_DIR}`);
   console.log(`Log NPS: ${NPS_LOG}`);
+
+  // Inicialização do NPS — nunca derruba o servidor em caso de erro
   try {
-    if (!fs.existsSync(NPS_LOG)) fs.writeFileSync(NPS_LOG, "", "utf8");
+    // Garante que o diretório existe antes de criar o arquivo
+    const dir = path.dirname(NPS_LOG);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+      console.log(`Diretório criado: ${dir}`);
+    }
+    if (!fs.existsSync(NPS_LOG)) {
+      fs.writeFileSync(NPS_LOG, "", "utf8");
+      console.log("NPS log criado.");
+    }
     const s = calcNPSStats();
-    console.log(s ? `NPS atual: ${s.npsScore} (${s.total} respostas)` : "NPS: sem dados ainda");
+    console.log(s ? `NPS atual: ${s.npsScore} (${s.total} respostas)` : "NPS: sem dados ainda.");
   } catch(e) {
-    console.error("Erro ao inicializar NPS:", e.message);
+    // Falha silenciosa — NPS indisponível mas servidor continua rodando
+    console.warn(`NPS não inicializado (${e.message}). Servidor continua normalmente.`);
   }
 });
