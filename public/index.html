@@ -82,6 +82,13 @@
   @keyframes gentle-pulse { 0%{transform:scale(1)} 50%{transform:scale(1.01)} 100%{transform:scale(1)} }
   #empty-msg { display:none; font-size:12.5px; color:var(--gold-mid); font-style:italic; text-align:center; padding:4px 8px; animation: fadein 0.3s ease; }
   @keyframes fadein { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+  #mic-btn { width:38px; height:38px; border-radius:50%; background:transparent; border:0.5px solid var(--gold-border); cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.2s; }
+  #mic-btn:hover { background:var(--gold-pale); border-color:var(--gold); }
+  #mic-btn.listening { background:var(--gold); border-color:var(--gold); animation:mic-pulse 1s infinite; }
+  #mic-btn.listening svg { stroke:#FFF8E7; }
+  #mic-btn.unsupported { opacity:0.3; cursor:not-allowed; }
+  @keyframes mic-pulse { 0%,100%{box-shadow:0 0 0 0 rgba(138,96,16,0.4)} 50%{box-shadow:0 0 0 6px rgba(138,96,16,0)} }
+  #mic-status { display:none; font-size:12px; color:var(--gold); font-style:italic; text-align:center; padding:2px 8px; animation: fadein 0.3s ease; }
   #send-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--gold); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; }
   #send-btn:active { transform: scale(0.93); background: #6A4808; }
   #send-btn:disabled { background: #c4a060; }
@@ -440,17 +447,26 @@
   <!-- Input -->
   <div id="input-area" style="flex-wrap:wrap;">
     <div style="display:flex;gap:8px;align-items:flex-end;width:100%;">
-      <textarea id="inp" rows="1" placeholder="Escreva livremente..."></textarea>
+      <textarea id="inp" rows="1" placeholder="Escreva ou fale livremente..."></textarea>
+      <button id="mic-btn" onclick="toggleMic()" title="Falar para o AURIS" aria-label="Ativar microfone">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="2" width="6" height="11" rx="3"/>
+          <path d="M5 10a7 7 0 0 0 14 0"/>
+          <line x1="12" y1="19" x2="12" y2="22"/>
+          <line x1="8" y1="22" x2="16" y2="22"/>
+        </svg>
+      </button>
       <button id="send-btn" onclick="send()">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFF8E7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
       </svg>
       </button>
     </div>
+    <p id="mic-status">🎙️ Ouvindo... fale agora</p>
     <p id="empty-msg">Compartilhe o que sente — escolha uma opção ou escreva livremente para continuarmos juntos. 🌿</p>
   </div>
 
-  <div id="footer">Versão: 1.8.1 | AURIS © 2026 · by <a href="https://linktr.ee/ericktorritezi" target="_blank" rel="noopener noreferrer">Erick Torritezi</a></div>
+  <div id="footer">Versão: 1.9.0 | AURIS © 2026 · by <a href="https://linktr.ee/ericktorritezi" target="_blank" rel="noopener noreferrer">Erick Torritezi</a></div>
 </div>
 
 <script>
@@ -674,6 +690,7 @@ async function callAPI(userText) {
   sendBtn.disabled = true;
   inp.disabled = true;
   document.getElementById("status-txt").textContent = "digitando...";
+  if (isListening && recognition) { try { recognition.stop(); } catch(e) {} }
   showTyping();
 
   try {
@@ -712,6 +729,93 @@ function chooseOpt(opt, row) {
   addUserBubble(opt);
   saveSession();
   callAPI(opt);
+}
+
+// ── Microfone — Web Speech API ─────────────────────────────────────────────
+let recognition = null;
+let isListening = false;
+
+function initSpeech() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    const btn = document.getElementById("mic-btn");
+    if (btn) {
+      btn.classList.add("unsupported");
+      btn.title = "Reconhecimento de voz não suportado neste navegador";
+    }
+    return false;
+  }
+  recognition = new SpeechRecognition();
+  recognition.lang = "pt-BR";
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.maxAlternatives = 1;
+
+  recognition.onstart = () => {
+    isListening = true;
+    const btn = document.getElementById("mic-btn");
+    const status = document.getElementById("mic-status");
+    btn.classList.add("listening");
+    status.style.display = "block";
+    document.getElementById("inp").placeholder = "Ouvindo...";
+  };
+
+  recognition.onresult = (e) => {
+    const transcript = Array.from(e.results)
+      .map(r => r[0].transcript).join("");
+    document.getElementById("inp").value = transcript;
+    // Auto-resize textarea
+    const inp = document.getElementById("inp");
+    inp.style.height = "auto";
+    inp.style.height = Math.min(inp.scrollHeight, 100) + "px";
+  };
+
+  recognition.onend = () => {
+    isListening = false;
+    const btn = document.getElementById("mic-btn");
+    const status = document.getElementById("mic-status");
+    btn.classList.remove("listening");
+    status.style.display = "none";
+    document.getElementById("inp").placeholder = "Escreva ou fale livremente...";
+    // Foca no campo para a pessoa revisar e confirmar
+    document.getElementById("inp").focus();
+  };
+
+  recognition.onerror = (e) => {
+    isListening = false;
+    const btn = document.getElementById("mic-btn");
+    const status = document.getElementById("mic-status");
+    btn.classList.remove("listening");
+    status.style.display = "none";
+    document.getElementById("inp").placeholder = "Escreva ou fale livremente...";
+    if (e.error !== "no-speech" && e.error !== "aborted") {
+      console.warn("Erro no microfone:", e.error);
+    }
+  };
+
+  return true;
+}
+
+function toggleMic() {
+  if (loading) return;
+  const btn = document.getElementById("mic-btn");
+  if (btn.classList.contains("unsupported")) return;
+
+  if (!recognition && !initSpeech()) return;
+
+  if (isListening) {
+    recognition.stop();
+  } else {
+    document.getElementById("inp").value = "";
+    document.getElementById("empty-msg").style.display = "none";
+    try {
+      recognition.start();
+    } catch(e) {
+      // Se já estava iniciado, para e reinicia
+      recognition.stop();
+      setTimeout(() => { try { recognition.start(); } catch(e2) {} }, 300);
+    }
+  }
 }
 
 function send() {
@@ -881,6 +985,7 @@ document.getElementById("welcome-name").addEventListener("keydown", e => {
 // Tentar restaurar sessão ao carregar
 window.addEventListener("load", () => {
   initCalendar();
+  initSpeech();
   setTimeout(() => {
     restoreSession();
   }, 300);
