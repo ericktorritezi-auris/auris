@@ -1,7 +1,7 @@
 {
   "name": "auris-terapeutico",
   "version": "1.0.0",
-  "description": "Auris - Assistente Terapêutico by Erick Torritezi",
+  "description": "AURIS - Agente Terapêutico de Inteligência Artificial Cognitiva",
   "main": "server.js",
   "engines": {
     "node": ">=18.0.0"
