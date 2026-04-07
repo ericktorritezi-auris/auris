@@ -92,6 +92,13 @@ ESTRUTURA DE CADA RESPOSTA:
 - Uma pergunta profunda iniciada com ✦
 - Exatamente 2 opções curtas iniciadas com →
 
+REGRA CRÍTICA SOBRE AS OPÇÕES:
+As duas opções (→) devem ser RESPOSTAS DIRETAS e COERENTES à pergunta feita (✦). 
+Elas precisam fazer sentido como continuação natural do que a pessoa poderia responder.
+NUNCA crie opções genéricas ou desconectadas da pergunta.
+Exemplo correto: se a pergunta é "O que você sente que precisa mudar primeiro?", as opções devem ser possíveis respostas a essa pergunta específica — como "→ Minha forma de me relacionar comigo mesmo" e "→ A direção que estou seguindo na vida".
+Exemplo errado: opções que falam de outro assunto ou que não respondem à pergunta feita.
+
 REGRAS:
 - Nunca dê diagnósticos nem substitua atendimento profissional
 - Se o sofrimento parecer grave, sugira sessão com Erick Torritezi
@@ -112,7 +119,16 @@ FORMATO EXATO:
 → [opção 1]
 → [opção 2]`;
 
-const SUMMARY_PROMPT = `Você é o AURIS. Com base na conversa abaixo, gere um resumo da jornada em texto corrido, linguagem simples, contendo: nome, temas principais, emoções presentes, padrões observados, insights e sugestão para próxima sessão. Responda em português do Brasil sem títulos ou marcadores.`;
+const SUMMARY_PROMPT = `Você é o AURIS. Com base na conversa abaixo, gere um resumo COMPLETO da jornada em texto corrido e linguagem simples. É fundamental que o resumo não seja cortado — escreva até o final, cobrindo todos os pontos abaixo:
+
+1. Nome da pessoa e contexto geral da sessão
+2. Temas principais que surgiram na conversa
+3. Emoções mais presentes e como foram expressas
+4. Padrões de comportamento ou pensamento observados
+5. Insights ou avanços que a pessoa demonstrou
+6. Sugestão clara e específica de por onde continuar na próxima sessão
+
+Escreva em português do Brasil, em texto corrido sem títulos ou marcadores, de forma acolhedora e humana. Não interrompa o texto antes de cobrir todos os pontos acima.`;
 
 app.use(cors());
 app.use(express.json());
@@ -122,7 +138,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.get("/api/health", (req, res) => {
   const s = calcNPSStats();
   res.json({
-    status: "ok", versao: "1.9.1",
+    status: "ok", versao: "1.9.2",
     chave_configurada: !!ANTHROPIC_API_KEY,
     data_dir: DATA_DIR,
     log_existe: fs.existsSync(NPS_LOG),
@@ -266,7 +282,7 @@ p.info{font-size:13.5px;color:#5a5040;line-height:1.75;margin-bottom:8px}
 <body>
 <div class="hdr">
   <h1>AURIS</h1>
-  <p>Painel NPS — Net Promoter Score · v1.9.1</p>
+  <p>Painel NPS — Net Promoter Score · v1.9.2</p>
 </div>
 <div class="wrap">
 
@@ -382,7 +398,7 @@ app.post("/api/summary", async (req, res) => {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
-      body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 800, messages: [{ role: "user", content: `${SUMMARY_PROMPT}\n\nCONVERSA:\n${conversation}` }] })
+      body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 2000, messages: [{ role: "user", content: `${SUMMARY_PROMPT}\n\nCONVERSA:\n${conversation}` }] })
     });
     const data = await response.json();
     const summary = (data.content || []).map(b => b.text || "").join("").trim();
@@ -393,7 +409,7 @@ app.post("/api/summary", async (req, res) => {
 app.get("*", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 
 app.listen(PORT, () => {
-  console.log(`✦ AURIS v1.9.1 rodando na porta ${PORT}`);
+  console.log(`✦ AURIS v1.9.2 rodando na porta ${PORT}`);
   console.log(`Data dir: ${DATA_DIR}`);
   console.log(`Log NPS: ${NPS_LOG}`);
 
