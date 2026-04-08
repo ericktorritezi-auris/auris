@@ -389,8 +389,7 @@ app.get("/privacidade", (req, res) => {
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:#f7f2e8;color:#2c2c2a;min-height:100vh}
 .hdr{background:#8A6010;padding:18px 24px;display:flex;align-items:center;justify-content:space-between}
 .hdr h1{font-size:18px;font-weight:700;color:#FFF8E7;letter-spacing:3px}
-.back{color:#F0C96A;font-size:13px;text-decoration:none}
-.back:hover{color:#FFF8E7}
+
 .wrap{max-width:680px;margin:0 auto;padding:24px 16px}
 .card{background:white;border:0.5px solid #e0d4b8;border-radius:16px;padding:24px 26px;margin-bottom:16px}
 h2{font-size:15px;font-weight:600;color:#8A6010;margin-bottom:10px;padding-bottom:8px;border-bottom:0.5px solid #e0d4b8}
@@ -402,7 +401,7 @@ ul{padding-left:18px}
 <body>
 <div class="hdr">
   <h1>AURIS</h1>
-  <a href="/" class="back">← Voltar</a>
+  <button onclick="window.close()" style="background:rgba(255,255,255,0.2);border:0.5px solid rgba(255,255,255,0.4);color:#FFF8E7;padding:6px 14px;border-radius:12px;font-size:13px;cursor:pointer;font-family:inherit;">Fechar ✕</button>
 </div>
 <div class="wrap">
   <div class="card">
@@ -461,8 +460,7 @@ app.get("/termos", (req, res) => {
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:#f7f2e8;color:#2c2c2a;min-height:100vh}
 .hdr{background:#8A6010;padding:18px 24px;display:flex;align-items:center;justify-content:space-between}
 .hdr h1{font-size:18px;font-weight:700;color:#FFF8E7;letter-spacing:3px}
-.back{color:#F0C96A;font-size:13px;text-decoration:none}
-.back:hover{color:#FFF8E7}
+
 .wrap{max-width:680px;margin:0 auto;padding:24px 16px}
 .card{background:white;border:0.5px solid #e0d4b8;border-radius:16px;padding:24px 26px;margin-bottom:16px}
 h2{font-size:15px;font-weight:600;color:#8A6010;margin-bottom:10px;padding-bottom:8px;border-bottom:0.5px solid #e0d4b8}
@@ -475,7 +473,7 @@ ul{padding-left:18px}
 <body>
 <div class="hdr">
   <h1>AURIS</h1>
-  <a href="/" class="back">← Voltar</a>
+  <button onclick="window.close()" style="background:rgba(255,255,255,0.2);border:0.5px solid rgba(255,255,255,0.4);color:#FFF8E7;padding:6px 14px;border-radius:12px;font-size:13px;cursor:pointer;font-family:inherit;">Fechar ✕</button>
 </div>
 <div class="wrap">
   <div class="card">
