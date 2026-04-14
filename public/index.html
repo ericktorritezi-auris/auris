@@ -234,6 +234,12 @@
   #nps-submit { width:100%; padding:11px; background:var(--gold); color:#FFF8E7; border:none; border-radius:20px; font-size:14px; font-family:inherit; cursor:pointer; font-weight:500; opacity:0.4; transition:opacity 0.2s; }
   #nps-submit.active { opacity:1; }
   #nps-skip { background:none; border:none; color:var(--text-muted); font-size:12px; font-family:inherit; cursor:pointer; text-decoration:underline; }
+  #nps-feedback-wrap { display:none; width:100%; animation:fadein 0.3s ease; }
+  #nps-feedback-label { font-size:12.5px; color:var(--text-mid); text-align:center; margin-bottom:6px; font-style:italic; }
+  #nps-feedback { width:100%; min-height:80px; padding:10px 14px; background:var(--gold-pale); border:0.5px solid var(--gold-border); border-radius:14px; font-size:13px; font-family:inherit; color:var(--text-mid); resize:none; line-height:1.6; }
+  #nps-feedback:focus { outline:none; border-color:var(--gold); }
+  #nps-char-count { font-size:11px; color:var(--text-muted); text-align:right; margin-top:3px; }
+  #nps-char-count.warn { color:#C0392B; }
 
   /* Help button */
   #btn-help { background: none; border: none; color: var(--gold-mid); font-size: 13px; font-family: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; padding: 0; }
@@ -500,6 +506,11 @@
         <div class="nps-num" onclick="selectNPS(this,10)">10</div>
       </div>
       <div id="nps-labels"><span>Não indicaria</span><span>Indicaria muito!</span></div>
+      <div id="nps-feedback-wrap">
+        <p id="nps-feedback-label">Conte-nos o que poderia ser melhor:</p>
+        <textarea id="nps-feedback" placeholder="Sua opinião é muito importante para nós..." maxlength="500" oninput="npsCharCount()"></textarea>
+        <p id="nps-char-count">0 / 500</p>
+      </div>
       <button id="nps-submit" disabled onclick="submitNPS()">Enviar avaliação</button>
       <button id="nps-skip" onclick="skipNPS()">Agora não</button>
     </div>
@@ -551,7 +562,7 @@
     <p id="empty-msg">Compartilhe o que sente — escolha uma opção, escreva ou fale livremente para continuarmos juntos. 🌿</p>
   </div>
 
-  <div id="footer">Versão: 1.9.4 | AURIS © 2026 · by <a href="https://linktr.ee/ericktorritezi" target="_blank" rel="noopener noreferrer">Erick Torritezi</a> · <a href="/privacidade" target="_blank" style="color:var(--gold);text-decoration:none;border-bottom:0.5px solid var(--gold-mid);">Privacidade</a> · <a href="/termos" target="_blank" style="color:var(--gold);text-decoration:none;border-bottom:0.5px solid var(--gold-mid);">Termos de Uso</a></div>
+  <div id="footer">Versão: 1.9.5 | AURIS © 2026 · by <a href="https://linktr.ee/ericktorritezi" target="_blank" rel="noopener noreferrer">Erick Torritezi</a> · <a href="/privacidade" target="_blank" style="color:var(--gold);text-decoration:none;border-bottom:0.5px solid var(--gold-mid);">Privacidade</a> · <a href="/termos" target="_blank" style="color:var(--gold);text-decoration:none;border-bottom:0.5px solid var(--gold-mid);">Termos de Uso</a></div>
 </div>
 
 <script>
@@ -1361,6 +1372,12 @@ function showNPS(callback) {
   const btn = document.getElementById("nps-submit");
   btn.disabled = true;
   btn.classList.remove("active");
+  const fw = document.getElementById("nps-feedback-wrap");
+  if (fw) fw.style.display = "none";
+  const fb = document.getElementById("nps-feedback");
+  if (fb) { fb.value = ""; fb.style.borderColor = ""; }
+  const cc = document.getElementById("nps-char-count");
+  if (cc) { cc.textContent = "0 / 500"; cc.className = ""; }
   document.getElementById("nps-overlay").classList.add("visible");
 }
 
@@ -1371,17 +1388,57 @@ function selectNPS(el, score) {
   const btn = document.getElementById("nps-submit");
   btn.disabled = false;
   btn.classList.add("active");
+
+  // Mostrar campo de feedback para neutros (7-8) e detratores (0-6)
+  const feedbackWrap = document.getElementById("nps-feedback-wrap");
+  const feedback = document.getElementById("nps-feedback");
+  if (score <= 8) {
+    feedbackWrap.style.display = "block";
+    const label = document.getElementById("nps-feedback-label");
+    label.textContent = score <= 6
+      ? "O que poderia ser melhor? Conta pra gente:"
+      : "O que poderíamos melhorar para você?";
+  } else {
+    feedbackWrap.style.display = "none";
+    if (feedback) feedback.value = "";
+    document.getElementById("nps-char-count").textContent = "0 / 500";
+  }
+}
+
+function npsCharCount() {
+  const ta = document.getElementById("nps-feedback");
+  const counter = document.getElementById("nps-char-count");
+  const len = ta.value.length;
+  counter.textContent = len + " / 500";
+  counter.className = len > 0 && len < 50 ? "warn" : "";
 }
 
 async function submitNPS() {
   if (npsSelectedScore === null) return;
+
+  // Validar feedback mínimo para neutros e detratores
+  if (npsSelectedScore <= 8) {
+    const feedback = document.getElementById("nps-feedback");
+    const text = feedback ? feedback.value.trim() : "";
+    if (text.length > 0 && text.length < 50) {
+      document.getElementById("nps-char-count").className = "warn";
+      document.getElementById("nps-feedback").style.borderColor = "#C0392B";
+      document.getElementById("nps-feedback-label").textContent = "Por favor, escreva pelo menos 50 caracteres (ou deixe em branco):";
+      return;
+    }
+  }
+
   npsAnswered = true;
   document.getElementById("nps-overlay").classList.remove("visible");
+
+  const feedbackEl = document.getElementById("nps-feedback");
+  const feedbackText = feedbackEl ? feedbackEl.value.trim() : "";
+
   try {
     await fetch("/api/nps", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ score: npsSelectedScore })
+      body: JSON.stringify({ score: npsSelectedScore, feedback: feedbackText })
     });
   } catch(e) {}
   if (typeof npsCallback === "function") { npsCallback(); npsCallback = null; }
