@@ -15,9 +15,13 @@ const DATA_DIR = process.env.DATA_DIR || __dirname;
 const NPS_LOG = path.join(DATA_DIR, "nps_log.txt");
 
 // ── NPS Log helpers ───────────────────────────────────────────────────────────
-function appendNPSLog(score) {
+function appendNPSLog(score, feedback = "") {
   try {
-    const line = `${new Date().toISOString()}|${score}\n`;
+    // Formato: ISO_DATE|SCORE|FEEDBACK (feedback só para neutros/detratores)
+    const safeFeedback = feedback ? feedback.replace(/[\r\n|]/g, " ").substring(0, 500) : "";
+    const line = safeFeedback
+      ? `${new Date().toISOString()}|${score}|${safeFeedback}\n`
+      : `${new Date().toISOString()}|${score}\n`;
     fs.appendFileSync(NPS_LOG, line, "utf8");
     // Manutenção: limitar a MAX_LOG_LINES
     const content = fs.readFileSync(NPS_LOG, "utf8");
@@ -154,7 +158,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.get("/api/health", (req, res) => {
   const s = calcNPSStats();
   res.json({
-    status: "ok", versao: "1.9.4",
+    status: "ok", versao: "1.9.5",
     chave_configurada: !!ANTHROPIC_API_KEY,
     data_dir: DATA_DIR,
     log_existe: fs.existsSync(NPS_LOG),
@@ -184,10 +188,10 @@ app.get("/api/nps/stats", (req, res) => {
 // ── NPS Submit ────────────────────────────────────────────────────────────────
 app.post("/api/nps", (req, res) => {
   try {
-    const { score } = req.body;
+    const { score, feedback } = req.body;
     if (score === undefined || score < 0 || score > 10)
       return res.status(400).json({ error: "Nota inválida" });
-    appendNPSLog(score);
+    appendNPSLog(score, feedback || "");
     const s = calcNPSStats();
     console.log(`NPS: nota ${score} | Total: ${s ? s.total : "?"} | Score: ${s ? s.npsScore : "?"}`);
     res.json({ ok: true, total: s ? s.total : 1, nps_score: s ? s.npsScore : null });
@@ -208,15 +212,18 @@ app.get("/api/nps/download", (req, res) => {
     "AURIS — Log de Respostas NPS",
     `Exportado em: ${new Date().toLocaleString("pt-BR")}`,
     s ? `Total: ${s.total} | Score NPS: ${s.npsScore} | Média: ${s.media}` : "Sem dados",
-    "─".repeat(50),
-    "Data/Hora                | Nota | Categoria",
-    "─".repeat(50),
+    "─".repeat(70),
+    "Data/Hora                | Nota | Categoria | Feedback (neutros/detratores)",
+    "─".repeat(70),
   ].join("\n");
   const lines = fs.readFileSync(NPS_LOG, "utf8").trim().split("\n").filter(Boolean).map(line => {
-    const [date, scoreStr] = line.split("|");
-    const sc = parseInt(scoreStr);
+    const parts = line.split("|");
+    const date = parts[0];
+    const sc = parseInt(parts[1]);
+    const feedbackTxt = parts[2] ? parts[2].trim() : "";
     const cat = sc >= 9 ? "Promotor" : sc >= 7 ? "Neutro" : "Detrator";
-    return `${date} | ${sc}    | ${cat}`;
+    const feedbackCol = feedbackTxt ? ` | Feedback: ${feedbackTxt}` : "";
+    return `${date} | ${sc} | ${cat}${feedbackCol}`;
   }).join("\n");
   res.send(header + "\n" + lines);
 });
@@ -298,7 +305,7 @@ p.info{font-size:13.5px;color:#5a5040;line-height:1.75;margin-bottom:8px}
 <body>
 <div class="hdr">
   <h1>AURIS</h1>
-  <p>Painel NPS — Net Promoter Score · v1.9.4</p>
+  <p>Painel NPS — Net Promoter Score · v1.9.5</p>
 </div>
 <div class="wrap">
 
@@ -565,7 +572,7 @@ app.post("/api/summary", async (req, res) => {
 app.get("*", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 
 app.listen(PORT, () => {
-  console.log(`✦ AURIS v1.9.4 rodando na porta ${PORT}`);
+  console.log(`✦ AURIS v1.9.5 rodando na porta ${PORT}`);
   console.log(`Data dir: ${DATA_DIR}`);
   console.log(`Log NPS: ${NPS_LOG}`);
 
