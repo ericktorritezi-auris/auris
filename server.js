@@ -154,7 +154,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.get("/api/health", (req, res) => {
   const s = calcNPSStats();
   res.json({
-    status: "ok", versao: "1.9.3",
+    status: "ok", versao: "1.9.4",
     chave_configurada: !!ANTHROPIC_API_KEY,
     data_dir: DATA_DIR,
     log_existe: fs.existsSync(NPS_LOG),
@@ -298,7 +298,7 @@ p.info{font-size:13.5px;color:#5a5040;line-height:1.75;margin-bottom:8px}
 <body>
 <div class="hdr">
   <h1>AURIS</h1>
-  <p>Painel NPS — Net Promoter Score · v1.9.3</p>
+  <p>Painel NPS — Net Promoter Score · v1.9.4</p>
 </div>
 <div class="wrap">
 
@@ -565,7 +565,7 @@ app.post("/api/summary", async (req, res) => {
 app.get("*", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 
 app.listen(PORT, () => {
-  console.log(`✦ AURIS v1.9.3 rodando na porta ${PORT}`);
+  console.log(`✦ AURIS v1.9.4 rodando na porta ${PORT}`);
   console.log(`Data dir: ${DATA_DIR}`);
   console.log(`Log NPS: ${NPS_LOG}`);
 
