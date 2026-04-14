@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#8A6010"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<link rel="manifest" href="/manifest.json"/>
+<meta name="mobile-web-app-capable" content="yes"/>
 <!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-Z0V4TKFJF5"></script>
 <script>
@@ -180,6 +182,42 @@
   #date-msg { font-size:13.5px; color:var(--text-mid); text-align:center; line-height:1.75; font-style:italic; }
   #date-theme { font-size:12px; color:var(--gold-mid); text-align:center; }
   #date-close { width:100%; padding:11px; background:var(--gold); color:#FFF8E7; border:none; border-radius:20px; font-size:14px; font-family:inherit; cursor:pointer; font-weight:500; }
+
+  /* PWA Install Banner */
+  #pwa-banner { display:none; position:fixed; bottom:0; left:0; right:0; z-index:999;
+    background:white; border-top:0.5px solid var(--gold-border);
+    border-radius:20px 20px 0 0; padding:16px 20px 28px;
+    box-shadow:0 -4px 24px rgba(0,0,0,0.12); animation:slide-up 0.35s ease; }
+  #pwa-banner.visible { display:block; }
+  @keyframes slide-up { from{transform:translateY(100%)} to{transform:translateY(0)} }
+  #pwa-banner-inner { max-width:480px; margin:0 auto; }
+  #pwa-banner-top { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+  #pwa-banner-icon { width:44px; height:44px; border-radius:12px; overflow:hidden; flex-shrink:0; }
+  #pwa-banner-icon img { width:100%; height:100%; object-fit:contain; }
+  #pwa-banner-text h3 { font-size:14px; font-weight:600; color:var(--gold); margin:0 0 2px; }
+  #pwa-banner-text p { font-size:12px; color:var(--text-mid); margin:0; line-height:1.4; }
+  #pwa-banner-btns { display:flex; gap:10px; }
+  #pwa-btn-install { flex:1; padding:12px; background:var(--gold); color:#FFF8E7;
+    border:none; border-radius:22px; font-size:14px; font-family:inherit;
+    font-weight:500; cursor:pointer; }
+  #pwa-btn-later { flex:1; padding:12px; background:transparent;
+    border:0.5px solid var(--gold-border); border-radius:22px; font-size:14px;
+    font-family:inherit; color:var(--text-mid); cursor:pointer; }
+  /* iOS instruction */
+  #ios-banner { display:none; position:fixed; bottom:0; left:0; right:0; z-index:999;
+    background:white; border-top:0.5px solid var(--gold-border);
+    border-radius:20px 20px 0 0; padding:16px 20px 28px;
+    box-shadow:0 -4px 24px rgba(0,0,0,0.12); animation:slide-up 0.35s ease; }
+  #ios-banner.visible { display:block; }
+  #ios-banner-inner { max-width:480px; margin:0 auto; text-align:center; }
+  #ios-banner h3 { font-size:14px; font-weight:600; color:var(--gold); margin:0 0 8px; }
+  #ios-banner p { font-size:12.5px; color:var(--text-mid); line-height:1.7; margin:0 0 12px; }
+  #ios-banner .ios-step { display:inline-flex; align-items:center; gap:6px;
+    background:var(--gold-pale); border-radius:12px; padding:6px 12px;
+    font-size:12px; color:var(--gold); margin:4px; }
+  #ios-close { background:none; border:0.5px solid var(--gold-border);
+    border-radius:22px; padding:10px 24px; font-size:13px; font-family:inherit;
+    color:var(--text-mid); cursor:pointer; margin-top:8px; }
 
   /* NPS Modal */
   #nps-overlay { display:none; position:absolute; inset:0; background:rgba(44,44,42,0.55); z-index:30; align-items:center; justify-content:center; }
@@ -409,6 +447,39 @@
     </div>
   </div>
 
+  <!-- PWA Install Banner (Android/Chrome) -->
+  <div id="pwa-banner">
+    <div id="pwa-banner-inner">
+      <div id="pwa-banner-top">
+        <div id="pwa-banner-icon">
+          <img src="" id="pwa-icon-img" alt="AURIS"/>
+        </div>
+        <div id="pwa-banner-text">
+          <h3>Adicionar AURIS à tela inicial</h3>
+          <p>Acesse o AURIS com um toque, a qualquer momento.</p>
+        </div>
+      </div>
+      <div id="pwa-banner-btns">
+        <button id="pwa-btn-install" onclick="pwaInstall()">Instalar agora</button>
+        <button id="pwa-btn-later" onclick="pwaDismiss()">Agora não</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- iOS Install Instructions -->
+  <div id="ios-banner">
+    <div id="ios-banner-inner">
+      <h3>Adicionar AURIS à tela inicial</h3>
+      <p>Para instalar o AURIS no seu iPhone ou iPad, siga os passos:</p>
+      <div>
+        <span class="ios-step">1. Toque em <strong>Compartilhar</strong> ↑</span>
+        <span class="ios-step">2. Role e toque em <strong>Adicionar à Tela Inicial</strong></span>
+        <span class="ios-step">3. Toque em <strong>Adicionar</strong></span>
+      </div>
+      <button id="ios-close" onclick="iosDismiss()">Entendi</button>
+    </div>
+  </div>
+
   <!-- NPS Overlay -->
   <div id="nps-overlay">
     <div id="nps-card">
@@ -480,7 +551,7 @@
     <p id="empty-msg">Compartilhe o que sente — escolha uma opção, escreva ou fale livremente para continuarmos juntos. 🌿</p>
   </div>
 
-  <div id="footer">Versão: 1.9.3 | AURIS © 2026 · by <a href="https://linktr.ee/ericktorritezi" target="_blank" rel="noopener noreferrer">Erick Torritezi</a> · <a href="/privacidade" target="_blank" style="color:var(--gold);text-decoration:none;border-bottom:0.5px solid var(--gold-mid);">Privacidade</a> · <a href="/termos" target="_blank" style="color:var(--gold);text-decoration:none;border-bottom:0.5px solid var(--gold-mid);">Termos de Uso</a></div>
+  <div id="footer">Versão: 1.9.4 | AURIS © 2026 · by <a href="https://linktr.ee/ericktorritezi" target="_blank" rel="noopener noreferrer">Erick Torritezi</a> · <a href="/privacidade" target="_blank" style="color:var(--gold);text-decoration:none;border-bottom:0.5px solid var(--gold-mid);">Privacidade</a> · <a href="/termos" target="_blank" style="color:var(--gold);text-decoration:none;border-bottom:0.5px solid var(--gold-mid);">Termos de Uso</a></div>
 </div>
 
 <script>
@@ -1000,6 +1071,8 @@ document.getElementById("welcome-name").addEventListener("keydown", e => {
 window.addEventListener("load", () => {
   initCalendar();
   initSpeech();
+  pwaInit();
+  registerSW();
   setTimeout(() => {
     restoreSession();
   }, 300);
@@ -1052,6 +1125,73 @@ ${rawText}
     btn.textContent = "Erro ao copiar";
     setTimeout(() => { btn.textContent = "Copiar resumo"; }, 2000);
   });
+}
+
+
+// ── PWA Install ──────────────────────────────────────────────────────────────
+let pwaPrompt = null;
+
+function pwaInit() {
+  // Não mostrar se já instalou ou já dispensou recentemente
+  if (localStorage.getItem('pwa-dismissed')) return;
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
+  if (window.navigator.standalone === true) return;
+
+  // Android/Chrome — intercepta o evento nativo
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    pwaPrompt = e;
+    setTimeout(() => showPwaBanner(), 3000);
+  });
+
+  // iOS Safari — detecta e mostra instrução manual
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  if (isIOS && isSafari) {
+    setTimeout(() => showIosBanner(), 3000);
+  }
+}
+
+function showPwaBanner() {
+  const banner = document.getElementById('pwa-banner');
+  const icon = document.getElementById('pwa-icon-img');
+  // Usa o emblema do AURIS como ícone
+  const emblemaImg = document.querySelector('#welcome-emblema img');
+  if (emblemaImg) icon.src = emblemaImg.src;
+  if (banner) banner.classList.add('visible');
+}
+
+function showIosBanner() {
+  const banner = document.getElementById('ios-banner');
+  if (banner) banner.classList.add('visible');
+}
+
+async function pwaInstall() {
+  document.getElementById('pwa-banner').classList.remove('visible');
+  if (pwaPrompt) {
+    pwaPrompt.prompt();
+    const { outcome } = await pwaPrompt.userChoice;
+    pwaPrompt = null;
+    if (outcome === 'dismissed') {
+      localStorage.setItem('pwa-dismissed', Date.now());
+    }
+  }
+}
+
+function pwaDismiss() {
+  document.getElementById('pwa-banner').classList.remove('visible');
+  localStorage.setItem('pwa-dismissed', Date.now());
+}
+
+function iosDismiss() {
+  document.getElementById('ios-banner').classList.remove('visible');
+  localStorage.setItem('pwa-dismissed', Date.now());
+}
+
+function registerSW() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
 }
 
 
