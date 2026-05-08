@@ -91,6 +91,11 @@
   #inp.empty-alert { border-color: #C9920A; background: #fffbf0; animation: gentle-pulse 0.4s ease; }
   @keyframes gentle-pulse { 0%{transform:scale(1)} 50%{transform:scale(1.01)} 100%{transform:scale(1)} }
   #empty-msg { display:none; font-size:12.5px; color:var(--gold-mid); font-style:italic; text-align:center; padding:4px 8px; animation: fadein 0.3s ease; }
+  .tts-btns { display:flex; gap:5px; justify-content:flex-end; margin-top:6px; }
+  .tts-btn { background:transparent; border:0.5px solid var(--gold-border); border-radius:50%; width:26px; height:26px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; color:var(--gold-mid); transition:all 0.15s; flex-shrink:0; }
+  .tts-btn:hover { background:var(--gold-pale); border-color:var(--gold); color:var(--gold); }
+  .tts-btn.playing { background:var(--gold); border-color:var(--gold); color:#FFF8E7; animation:mic-pulse 1s infinite; }
+  .tts-btn:disabled { opacity:0.35; cursor:default; }
   @keyframes fadein { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
   #mic-btn { width:38px; height:38px; border-radius:50%; background:transparent; border:0.5px solid var(--gold-border); cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.2s; }
   #mic-btn:hover { background:var(--gold-pale); border-color:var(--gold); }
@@ -562,7 +567,7 @@
     <p id="empty-msg">Compartilhe o que sente — escolha uma opção, escreva ou fale livremente para continuarmos juntos. 🌿</p>
   </div>
 
-  <div id="footer">Versão: 1.9.5 | AURIS © 2026 · by <a href="https://linktr.ee/ericktorritezi" target="_blank" rel="noopener noreferrer">Erick Torritezi</a> · <a href="/privacidade" target="_blank" style="color:var(--gold);text-decoration:none;border-bottom:0.5px solid var(--gold-mid);">Privacidade</a> · <a href="/termos" target="_blank" style="color:var(--gold);text-decoration:none;border-bottom:0.5px solid var(--gold-mid);">Termos de Uso</a></div>
+  <div id="footer">Versão: 1.9.6 | AURIS © 2026 · by <a href="https://linktr.ee/ericktorritezi" target="_blank" rel="noopener noreferrer">Erick Torritezi</a> · <a href="/privacidade" target="_blank" style="color:var(--gold);text-decoration:none;border-bottom:0.5px solid var(--gold-mid);">Privacidade</a> · <a href="/termos" target="_blank" style="color:var(--gold);text-decoration:none;border-bottom:0.5px solid var(--gold-mid);">Termos de Uso</a></div>
 </div>
 
 <script>
@@ -756,6 +761,24 @@ function addBotBubble(text) {
     wrap.appendChild(hint);
   }
 
+  if (text && text.trim().length > 10) {
+    const ttsWrap = document.createElement("div");
+    ttsWrap.className = "tts-btns";
+    const btnF = document.createElement("button");
+    btnF.className = "tts-btn";
+    btnF.title = "Ouvir com voz feminina";
+    btnF.innerHTML = "&#9792;";
+    btnF.onclick = () => speakTTS(text, "f", btnF);
+    const btnM = document.createElement("button");
+    btnM.className = "tts-btn";
+    btnM.title = "Ouvir com voz masculina";
+    btnM.innerHTML = "&#9794;";
+    btnM.onclick = () => speakTTS(text, "m", btnM);
+    ttsWrap.appendChild(btnF);
+    ttsWrap.appendChild(btnM);
+    wrap.appendChild(ttsWrap);
+  }
+
   msgs.insertBefore(wrap, btm);
   scrollDown();
 }
@@ -825,6 +848,51 @@ function chooseOpt(opt, row) {
   addUserBubble(opt);
   saveSession();
   callAPI(opt);
+}
+
+// ── Text-to-Speech — Google Neural2 ────────────────────────────────────────
+let currentAudio = null;
+let currentTTSBtn = null;
+
+async function speakTTS(text, gender, btn) {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+    if (currentTTSBtn) { currentTTSBtn.classList.remove("playing"); currentTTSBtn.disabled = false; currentTTSBtn = null; }
+  }
+  const lines = text.split("\n").filter(l => !l.trim().startsWith("\u2192") && l.trim());
+  const cleanText = lines.join(". ").replace(/\u2726/g, "").replace(/\.\.+/g, ".").trim();
+  if (!cleanText) return;
+  btn.classList.add("playing");
+  btn.disabled = true;
+  currentTTSBtn = btn;
+  try {
+    const res = await fetch("/api/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: cleanText, gender })
+    });
+    if (!res.ok) throw new Error("Erro TTS");
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    currentAudio = new Audio(url);
+    currentAudio.play();
+    currentAudio.onended = () => {
+      btn.classList.remove("playing");
+      btn.disabled = false;
+      currentAudio = null; currentTTSBtn = null;
+      URL.revokeObjectURL(url);
+    };
+    currentAudio.onerror = () => {
+      btn.classList.remove("playing");
+      btn.disabled = false;
+      currentAudio = null; currentTTSBtn = null;
+    };
+  } catch(e) {
+    btn.classList.remove("playing");
+    btn.disabled = false;
+    currentTTSBtn = null;
+  }
 }
 
 // ── Microfone — Web Speech API ─────────────────────────────────────────────
