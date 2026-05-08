@@ -180,7 +180,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.get("/api/health", (req, res) => {
   const s = calcNPSStats();
   res.json({
-    status: "ok", versao: "1.9.5",
+    status: "ok", versao: "1.9.6",
     chave_configurada: !!ANTHROPIC_API_KEY,
     data_dir: DATA_DIR,
     log_existe: fs.existsSync(NPS_LOG),
@@ -327,7 +327,7 @@ p.info{font-size:13.5px;color:#5a5040;line-height:1.75;margin-bottom:8px}
 <body>
 <div class="hdr">
   <h1>AURIS</h1>
-  <p>Painel NPS — Net Promoter Score · v1.9.5</p>
+  <p>Painel NPS — Net Promoter Score · v1.9.6</p>
 </div>
 <div class="wrap">
 
@@ -555,6 +555,46 @@ ul{padding-left:18px}
 </body></html>`);
 });
 
+// ── Text-to-Speech ───────────────────────────────────────────────────────────
+app.post("/api/tts", async (req, res) => {
+  try {
+    const GOOGLE_TTS_KEY = process.env.GOOGLE_TTS_KEY;
+    if (!GOOGLE_TTS_KEY) return res.status(500).json({ error: "Chave TTS não configurada" });
+
+    const { text, gender } = req.body;
+    if (!text) return res.status(400).json({ error: "Texto não informado" });
+
+    const isMale = gender === "m";
+    const voice = isMale ? "pt-BR-Neural2-B" : "pt-BR-Neural2-C";
+    const pitch  = isMale ? -2.0 : 1.5;
+    const rate   = isMale ? 0.82 : 0.86;
+
+    const response = await fetch(
+      `https://texttospeech.googleapis.com/v1/text:synthesize?key=${GOOGLE_TTS_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          input: { text },
+          voice: { languageCode: "pt-BR", name: voice },
+          audioConfig: { audioEncoding: "MP3", speakingRate: rate, pitch }
+        })
+      }
+    );
+
+    const data = await response.json();
+    if (!response.ok || !data.audioContent)
+      return res.status(500).json({ error: data.error?.message || "Erro no TTS" });
+
+    const audio = Buffer.from(data.audioContent, "base64");
+    res.setHeader("Content-Type", "audio/mpeg");
+    res.setHeader("Cache-Control", "no-store");
+    res.send(audio);
+  } catch(err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── Chat ──────────────────────────────────────────────────────────────────────
 app.post("/api/chat", async (req, res) => {
   try {
@@ -594,7 +634,7 @@ app.post("/api/summary", async (req, res) => {
 app.get("*", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 
 app.listen(PORT, () => {
-  console.log(`✦ AURIS v1.9.5 rodando na porta ${PORT}`);
+  console.log(`✦ AURIS v1.9.6 rodando na porta ${PORT}`);
   console.log(`Data dir: ${DATA_DIR}`);
   console.log(`Log NPS: ${NPS_LOG}`);
 
