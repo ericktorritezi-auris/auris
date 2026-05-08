@@ -566,8 +566,24 @@ app.post("/api/tts", async (req, res) => {
 
     const isMale = gender === "m";
     const voice = isMale ? "pt-BR-Neural2-B" : "pt-BR-Neural2-C";
-    const pitch  = isMale ? -2.0 : 1.5;
-    const rate   = isMale ? 0.82 : 0.86;
+    const pitch  = isMale ? -1.0 : 0.8;
+    const rate   = isMale ? 1.0 : 1.02;
+
+    // Converter texto para SSML para pausas naturais
+    function toSSML(raw) {
+      return "<speak>" +
+        raw
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\.{3}/g, '<break time="600ms"/>')
+          .replace(/([.!?])\s/g, '$1<break time="400ms"/> ')
+          .replace(/,\s/g, ',<break time="200ms"/> ')
+          .replace(/—/g, '<break time="300ms"/>')
+        + "</speak>";
+    }
+
+    const ssml = toSSML(text);
 
     const response = await fetch(
       `https://texttospeech.googleapis.com/v1/text:synthesize?key=${GOOGLE_TTS_KEY}`,
@@ -575,9 +591,10 @@ app.post("/api/tts", async (req, res) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          input: { text },
+          input: { ssml },
           voice: { languageCode: "pt-BR", name: voice },
-          audioConfig: { audioEncoding: "MP3", speakingRate: rate, pitch }
+          audioConfig: { audioEncoding: "MP3", speakingRate: rate, pitch,
+            effectsProfileId: ["headphone-class-device"] }
         })
       }
     );
